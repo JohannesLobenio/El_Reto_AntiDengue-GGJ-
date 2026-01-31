@@ -2,21 +2,25 @@ using UnityEngine;
 
 public class InputHandler : MonoBehaviour
 {
-    [Header("Flags de Input")]
+    [Header("Flags de Input (Pulsación única)")]
     public bool clickInput;
     public bool fInput;
     public bool eInput;
 
+    [Header("Estado en Tiempo Real (Mantenido)")]
+    public bool estaManteniendoClick; // Nuevo bool para registro en tiempo real
+
     void Update()
     {
-        // Registramos el input. 
-        // Nota: Solo se activan si el controlador ya ha procesado el anterior (están en false).
+        // Registro de pulsaciones únicas (Banderas para el controlador)
         if (Input.GetMouseButtonDown(0)) clickInput = true;
         if (Input.GetKeyDown(KeyCode.F)) fInput = true;
         if (Input.GetKeyDown(KeyCode.E)) eInput = true;
+
+        // Registro en tiempo real: true mientras el botón esté presionado
+        estaManteniendoClick = Input.GetMouseButton(0);
     }
 
-    // Método para que el controlador limpie los estados después de usarlos
     public void ResetInput(string inputName)
     {
         switch (inputName)

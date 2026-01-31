@@ -6,7 +6,7 @@ public class AnimationController : MonoBehaviour
 {
     private Animator anim;
     private InputHandler detector;
-    private bool estaOcupado = false;
+    public bool estaOcupado = false;
 
     [Header("Configuración de Rotación")]
     public Transform objetoARotar;
@@ -21,8 +21,12 @@ public class AnimationController : MonoBehaviour
 
     void Update()
     {
+        // Sincronización en tiempo real del parámetro "Mantenido"
+        anim.SetBool("Mantenido", detector.estaManteniendoClick);
+
         if (estaOcupado) return;
 
+        // Ejecución de acciones por pulsación única
         if (detector.clickInput) StartCoroutine(EjecutarAccion("Click"));
         else if (detector.fInput) StartCoroutine(EjecutarAccion("F"));
         else if (detector.eInput) StartCoroutine(EjecutarAccion("E"));
@@ -49,18 +53,17 @@ public class AnimationController : MonoBehaviour
         anim.SetBool("Quieto", false);
         anim.SetBool(parametro, true);
 
-        yield return null; // Sincronizar con Animator
+        yield return null;
 
         float duracionTotal = anim.GetCurrentAnimatorStateInfo(0).length;
 
-        // Definición de tiempos según tus necesidades
-        float tiempoRotarIda = duracionTotal * 0.1f;    // Rotación muy rápida (10%)
-        float tiempoEsperaTotal = duracionTotal * 0.7f; // Punto de corte para lógica (70%)
-        float tiempoRotarVuelta = duracionTotal * 0.1f; // Regreso igual de rápido (10%)
+        float tiempoRotarIda = duracionTotal * 0.1f;
+        float tiempoEsperaTotal = duracionTotal * 0.7f;
+        float tiempoRotarVuelta = duracionTotal * 0.1f;
 
         float t = 0;
 
-        // --- FASE 1: ROTACIÓN RÁPIDA (10% de la duración) ---
+        // --- FASE 1: ROTACIÓN RÁPIDA (10%) ---
         while (t < 1.0f)
         {
             t += Time.deltaTime / tiempoRotarIda;
@@ -72,15 +75,14 @@ public class AnimationController : MonoBehaviour
             yield return null;
         }
 
-        // --- FASE 2: ESPERA RESTANTE HASTA EL 70% ---
-        // Como ya gastamos el 10% rotando, esperamos el 60% restante
+        // --- FASE 2: ESPERA HASTA EL 70% ---
         yield return new WaitForSeconds(tiempoEsperaTotal - tiempoRotarIda);
 
-        // --- RESET DE PARÁMETROS ANIMATOR ---
+        // --- RESET DE PARÁMETROS ---
         anim.SetBool(parametro, false);
         anim.SetBool("Quieto", true);
 
-        // --- FASE 3: REGRESO RÁPIDO A Z ORIGINAL (10% de la duración) ---
+        // --- FASE 3: REGRESO RÁPIDO (10%) ---
         t = 0;
         while (t < 1.0f)
         {
@@ -93,7 +95,6 @@ public class AnimationController : MonoBehaviour
             yield return null;
         }
 
-        // Asegurar posición final exacta
         if (puedeRotar)
             objetoARotar.localRotation = Quaternion.Euler(eulerInicial.x, eulerInicial.y, zOriginal);
 
